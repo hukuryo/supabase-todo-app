@@ -2,7 +2,7 @@ import TodoList from "@/components/TodoList"
 import { Header } from "@/components/Header"
 
 
-export default function (){
+export default function page(){
     return(
         <>  
             <Header />
