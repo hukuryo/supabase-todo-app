@@ -1,69 +1,68 @@
+"use client"
+
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+
+import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+
+const formSchema = z.object({
+  username: z.string().min(2).max(50),
+})
+
 import { Header } from "@/components/Header"
-import Head from "next/head";
-import { createClient } from '@/utils/supabase/server';
-import styles from "../styles/Home.module.css";
-import { useRouter } from 'next/router';
-import React, { useState,useEffect } from 'react';
 
 
 export default function page(){
-    const [newTitle, setNewTitle] = useState("");
-    const [newContent, setNewContent] = useState("");
-    const [posts, setPosts] = useState([]);
-    const supabase = createClient();
-
-    useEffect(() => {
-      (async () => await indexPost())();
-    }, []);
-
-    const indexPost = async () => {
-        try {
-          const { data, error } = await supabase.from("posts").select("*");
-          if (error) throw error;
-          setPosts(data);
-        } catch (error) {
-          alert(error.message);
-          setPosts([]);
-        }
-      };
-  
-    const addPost = async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      try {
-        const { error } = await supabase.from("todos").insert([
-          {
-            title: newTitle,
-            content: newContent,
-          },
-        ]);
-        if (error) throw error;
-        await indexPost();
-        setNewTitle("");
-        setNewContent("");
-      } catch (error) {
-        alert("データの新規登録ができません");
-      }
-    };
+     // 1. Define your form.
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+        username: "",
+        },
+    })
+    
+    // 2. Define a submit handler.
+    function onSubmit(values: z.infer<typeof formSchema>) {
+        // Do something with the form values.
+        // ✅ This will be type-safe and validated.
+        console.log(values)
+    }
     return(
         <>  
             <Header />
             <h1>ADD TODO</h1>
-            <form onSubmit={addPost}>
-             <div>
-                <label>タイトル</label><br/>
-                <input
-                  type="text"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)} />
-              </div>
-              <div>
-                <label>内容</label><br/>
-                <textarea value={newContent} rows={10} cols={40}  onChange={(e) => setNewContent(e.target.value)}/>
-              </div>
-              <div>
-                <button type="submit">登録</button>
-              </div>
-          </form>
+            <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                        <Input placeholder="shadcn" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                        This is your public display name.
+                    </FormDescription>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <Button type="submit">Submit</Button>
+            </form>
+            </Form>
         </>
     )
 }
